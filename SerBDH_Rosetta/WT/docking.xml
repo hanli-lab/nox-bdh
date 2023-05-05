@@ -1,0 +1,63 @@
+<ROSETTASCRIPTS>
+      <SCOREFXNS>
+                <ScoreFunction name="myscore" weights="ref2015_cst.wts"/>
+      </SCOREFXNS>
+      <SCORINGGRIDS ligand_chain="X" width="20.0">
+                <ClassicGrid grid_name="dock_grid" weight="1.0"/>
+      </SCORINGGRIDS>
+      <TASKOPERATIONS>
+        <InitializeFromCommandline name="init"/>
+        <DetectProteinLigandInterface name="edto_repack" design="0" cut1="6.0" cut2="8.0" cut3="12.0" cut4="14.0"/>
+        <DetectProteinLigandInterface name="edto2" design="1" cut1="6.0" cut2="8.0" cut3="10.0" cut4="12.0"/>
+        <DesignAround name="des_around" design_shell="6" resnums="%%current_res%%" repack_shell="6.0" allow_design="0" />
+        <LimitAromaChi2 name="limchi2"/>
+        <SetCatalyticResPackBehavior name="catres" fix_catalytic_aa="0"/>
+        <ProteinLigandInterfaceUpweighter name="up" interface_weight="1.5"/>
+
+
+      </TASKOPERATIONS>
+
+
+      <FILTERS>
+                <ScoreType name="total_score" scorefxn="myscore" score_type="total_score" threshold="100000"/>
+                <EnzScore name="allcst" score_type="cstE" scorefxn="myscore" whole_pose="1" energy_cutoff="500.0"/>
+       </FILTERS>
+       <MOVERS>
+
+         <MutateResidue name="L39Q" target="39A" new_res="LEU"/>
+	 <MutateResidue name="A92K" target="92A" new_res="ALA"/>
+	 <MutateResidue name="M194T" target="194A" new_res="MET"/>
+	 <AddOrRemoveMatchCsts name="cstadd" cst_instruction="add_new"/>
+	 <DumpPdb name="dump" fname="dump.pdb" scorefxn="myscore" tag_time="1"/>
+       	 <Transform name="predock" chain="X" box_size="5" move_distance="1" angle="20" cycles="1000000" repeats="5" temperature="5"/>
+	     <Transform name="predock2" chain="X" box_size="2" move_distance="0.2" angle="20" cycles="1000000" repeats="5" temperature="5"/>
+	     <PredesignPerturbMover name="predock3" trans_magnitude="1" rot_magnitude="20" dock_trials="1000"/>
+	     <PredesignPerturbMover name="predock4" trans_magnitude="0.1" rot_magnitude="2.0" dock_trials="1000"/>
+             <EnzRepackMinimize name="repack_wbb" design="0" repack_only="1" scorefxn_minimize="myscore" scorefxn_repack="soft_rep" minimize_rb="1"   minimize_sc="1" minimize_bb="1" cycles="1" minimize_lig="1" min_in_stages="0" backrub="0" rb_min_jumps="1" task_operations="edto_repack,limchi2,catres,init,up"/>
+             <EnzRepackMinimize name="design_wbb" design="1" repack_only="0" scorefxn_minimize="myscore" scorefxn_repack="soft_rep" minimize_rb="1"   minimize_sc="1" minimize_bb="1" cycles="1" minimize_lig="1" min_in_stages="0" backrub="0" rb_min_jumps="1" task_operations="edto2,limchi2,catres,init,up"/>
+             <EnzRepackMinimize name="min_wbb" design="0" repack_only="0" scorefxn_minimize="myscore" scorefxn_repack="soft_rep" minimize_rb="1"   minimize_sc="1" minimize_bb="1" cycles="1" minimize_lig="1" min_in_stages="0" backrub="0" rb_min_jumps="1" task_operations="edto_repack,limchi2,catres,init,up"/>
+             <EnzRepackMinimize name="cstopt" cst_opt="1" minimize_rb="1" minimize_sc="1" minimize_bb="1" cycles="1" min_in_stages="0" minimize_lig="1" rb_min_jumps="1" task_operations="edto_repack,limchi2,catres,init,up"/>
+	     <PredesignPerturbMover name="perturb" trans_magnitude="0.1" rot_magnitude="2.0" dock_trials="1000"/>
+	     <BackrubProtocol name="backrub" mc_kt="1.2" ntrials="5000" task_operations="edto_repack,limchi2,catres"/>
+             <ParsedProtocol name="dock_pak">
+                  <Add mover="predock"/>
+	          <Add mover="perturb"/>
+		  <Add mover="cstopt"/>
+                  <Add mover="repack_wbb"/>
+                  <Add mover="min_wbb"/>
+             </ParsedProtocol>
+	     <FastRelax name="fastdes" scorefxn="myscore" task_operations="des_around,limchi2,catres,up"/>
+
+             <GenericMonteCarlo name="interative_dp" mover_name="dock_pak" scorefxn_name="myscore" trials="10" sample_type="low" temperature="0.6" drift="1"/>
+
+      </MOVERS>
+      <PROTOCOLS>
+              <Add mover_name="cstadd"/>
+	      <Add mover_name="L39Q"/>
+	      <Add mover_name="A92K"/>
+        <Add mover_name="M194T"/>
+	      <Add mover="interative_dp"/>
+	      <Add filter_name="allcst"/>
+	      <Add filter_name="total_score"/>
+      </PROTOCOLS>
+</ROSETTASCRIPTS>
