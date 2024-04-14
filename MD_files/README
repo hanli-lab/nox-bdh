@@ -1,0 +1,15 @@
+## input files and parameters for MD simulation
+
+### topology file 
++ fad: fad.str
++ nmnh: nmnh.str
+
+### parameter related files
++ toppar
+
+### md input file:
++ 01eq: stage 1 for equilibrating 200 ps where taking all C$_{\alpha}$ atoms of protein and heavy atom of NMNH and FAD fixed;
++ 02npt: stage 2 for relaxing 10 ns where constraint applied to C$_{\alpha}$ atoms of protein and heavy atom of NMNH and FAD decreasing from 100 to 0 kcal/mol/ang^2 at an inteveral of 2 ns;
++ 03prod: stage 3 for production lasting 100 ns with removing all constraints;
+
+

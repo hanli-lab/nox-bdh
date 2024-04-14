@@ -1,0 +1,17 @@
+#!/bin/tclsh
+
+mkdir -p output
+package require psfgen
+
+resetpsf
+
+topology ../toppar/top_all36_cgenff.rtf
+topology nmnh.str
+
+segment N {pdb nmnh.pdb}
+coordpdb nmnh.pdb N
+
+writepdb output/nmnh.pdb
+writepsf output/nmnh.psf
+
+quit
