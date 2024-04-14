@@ -1,0 +1,17 @@
+#!/bin/tclsh
+
+mkdir -p output
+package require psfgen
+
+resetpsf
+
+topology ../toppar/top_all36_cgenff.rtf
+topology fad.str
+
+segment F {pdb fad_addH.pdb}
+coordpdb fad_addH.pdb F
+
+writepdb output/fad.pdb
+writepsf output/fad.psf
+
+quit
